@@ -7,20 +7,21 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type LinkScraper struct {
+type LinkExtractor struct {
 	c         *colly.Collector
 	urlString string
 }
 
-func NewScraper(collector *colly.Collector, scrape_url string) *LinkScraper {
-	return &LinkScraper{
+func NewExtractor(collector *colly.Collector, scrape_url string) *LinkExtractor {
+	return &LinkExtractor{
 		c:         collector,
 		urlString: scrape_url,
 	}
 }
 
 // get all TitleHeadings and send to Kafka topic
-func (s *LinkScraper) ScrapeArticles() {
+func (s *LinkExtractor) ExtractArticles() {
+	// config stuff so we get authorized
 	s.c.AllowURLRevisit = true
 
 	s.c.Limit(&colly.LimitRule{
@@ -40,14 +41,19 @@ func (s *LinkScraper) ScrapeArticles() {
 		r.Headers.Set("Upgrade-Insecure-Requests", "1")
 	})
 
-	//s.c.OnResponse(func(r *colly.Response) {
-	//	fmt.Printf("Response Code: %d\n", r.StatusCode)
-	//	fmt.Printf("Response Body: %s\n", string(r.Body))
-	//})
+	// html callbacks
 
 	s.c.OnHTML("a[data-testid='TitleLink']", func(e *colly.HTMLElement) {
 		if article_link := e.Attr("href"); article_link != "" {
-			log.Printf("Adding article link to kafka: %s", article_link)
+			log.Printf("Got link: %s", article_link)
+		} else {
+			log.Println("Error finding article href")
+		}
+	})
+
+	s.c.OnHTML("a[data-testid='Title']", func(e *colly.HTMLElement) {
+		if article_link := e.Attr("href"); article_link != "" {
+			log.Printf("Got link: %s", article_link)
 		} else {
 			log.Println("Error finding article href")
 		}
