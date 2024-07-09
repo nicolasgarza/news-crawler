@@ -1,0 +1,17 @@
+package main
+
+import (
+	"news-crawler/internal/crawler"
+
+	"github.com/gocolly/colly"
+)
+
+func main() {
+	collector := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
+	)
+	urlString := "https://www.reuters.com/"
+	linkScraper := crawler.NewScraper(collector, urlString)
+
+	linkScraper.ScrapeArticles()
+}
