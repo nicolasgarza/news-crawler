@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"news-crawler/internal/crawler"
 
 	"github.com/gocolly/colly"
@@ -13,5 +14,13 @@ func main() {
 	articleString := "https://www.reuters.com/markets/deals/mountain-asset-sales-loom-after-oil-megamerger-era-2024-06-26/"
 
 	articleProcessor := crawler.NewScraper(collector, articleString)
-	articleProcessor.ScrapeArticle()
+	articleInfo, err := articleProcessor.ScrapeArticle()
+	if err != nil {
+		log.Printf("Failed to scrape articles: %v", err)
+	}
+
+	log.Printf("Article title: %s", articleInfo.Title)
+	log.Printf("Article authors: %q\n", &articleInfo.Authors)
+	log.Printf("Article date: %v\n", &articleInfo.Date)
+	log.Printf("Article content length: %d characters", len(articleInfo.Content))
 }

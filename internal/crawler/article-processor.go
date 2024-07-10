@@ -27,8 +27,9 @@ func NewScraper(collector *colly.Collector, articleUrl string) *ArticleScraper {
 	}
 }
 
-func (a *ArticleScraper) ScrapeArticle() {
+func (a *ArticleScraper) ScrapeArticle() (*articleInfo, error) {
 	articleInfo := &articleInfo{}
+	var scrapeErr error
 
 	// config stuff so we get authorized
 	a.c.AllowURLRevisit = true
@@ -38,7 +39,7 @@ func (a *ArticleScraper) ScrapeArticle() {
 	})
 
 	a.c.OnError(func(_ *colly.Response, err error) {
-		log.Println("Error: ", err)
+		scrapeErr = err
 	})
 
 	a.c.OnRequest(func(r *colly.Request) {
@@ -102,11 +103,16 @@ func (a *ArticleScraper) ScrapeArticle() {
 		articleInfo.Content = articleContent.String()
 	})
 
-	a.c.Visit(a.articleUrl)
-	log.Printf("Article title: %s", articleInfo.Title)
-	log.Printf("Article authors: %q\n", &articleInfo.Authors)
-	log.Printf("Article date: %v\n", &articleInfo.Date)
-	log.Printf("Article content length: %d characters", len(articleInfo.Content))
+	err := a.c.Visit(a.articleUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if scrapeErr != nil {
+		return nil, scrapeErr
+	}
+
+	return articleInfo, nil
 }
 
 func parseDate(dateStr string) (time.Time, error) {

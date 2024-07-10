@@ -20,7 +20,7 @@ func NewExtractor(collector *colly.Collector, scrape_url string) *LinkExtractor 
 }
 
 // get all TitleHeadings and send to Kafka topic
-func (s *LinkExtractor) ExtractArticles() {
+func (s *LinkExtractor) ExtractArticles(linkHandler func(string)) {
 	// config stuff so we get authorized
 	s.c.AllowURLRevisit = true
 
@@ -46,6 +46,7 @@ func (s *LinkExtractor) ExtractArticles() {
 	s.c.OnHTML("a[data-testid='TitleLink']", func(e *colly.HTMLElement) {
 		if article_link := e.Attr("href"); article_link != "" {
 			log.Printf("Got link: %s", article_link)
+			linkHandler(article_link)
 		} else {
 			log.Println("Error finding article href")
 		}
@@ -54,6 +55,7 @@ func (s *LinkExtractor) ExtractArticles() {
 	s.c.OnHTML("a[data-testid='Title']", func(e *colly.HTMLElement) {
 		if article_link := e.Attr("href"); article_link != "" {
 			log.Printf("Got link: %s", article_link)
+			linkHandler(article_link)
 		} else {
 			log.Println("Error finding article href")
 		}
