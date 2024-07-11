@@ -40,6 +40,7 @@ func main() {
 		articleInfo, err := articleProcessor.ScrapeArticle()
 		if err != nil {
 			log.Printf("Failed to scrape article %s: %v", articleUrl, err)
+			log.Println("-----------------------------------")
 			continue
 		}
 

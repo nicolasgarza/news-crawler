@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"fmt"
 	"log"
 	"news-crawler/internal/utils"
 	"strings"
@@ -37,11 +38,13 @@ func (a *ArticleScraper) ScrapeArticle() (*articleInfo, error) {
 	})
 
 	// get title
+	titleFound := false
 	a.c.OnHTML("div[class='default-article-header__heading__3cyKI']", func(e *colly.HTMLElement) {
 		headerText := e.ChildText("h1")
 
 		if headerText != "" {
 			articleInfo.Title = headerText
+			titleFound = true
 		} else {
 			log.Println("Error getting header text")
 		}
@@ -95,6 +98,19 @@ func (a *ArticleScraper) ScrapeArticle() (*articleInfo, error) {
 
 	if scrapeErr != nil {
 		return nil, scrapeErr
+	}
+
+	// check if title, authors, or conent is empty
+	if !titleFound {
+		return nil, fmt.Errorf("failed to scrape article: title is empty")
+	}
+
+	if len(articleInfo.Authors) == 0 {
+		return nil, fmt.Errorf("failed to scrape article: no authors found")
+	}
+
+	if articleInfo.Content == "" {
+		return nil, fmt.Errorf("failed to scrape article: content is empty")
 	}
 
 	return articleInfo, nil
