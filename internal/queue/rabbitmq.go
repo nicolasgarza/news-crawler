@@ -52,6 +52,18 @@ func (r *RabbitMQ) PublishMessage(body string) error {
 		})
 }
 
+func (r *RabbitMQ) Consume() (<-chan amqp.Delivery, error) {
+	return r.channel.Consume(
+		r.queue.Name, // queue
+		"",           // consumer
+		true,         // auto-ack
+		false,        // exclusive
+		false,        // no-local
+		false,        // no-wait
+		nil,          // args
+	)
+}
+
 func (r *RabbitMQ) Close() {
 	r.channel.Close()
 	r.conn.Close()

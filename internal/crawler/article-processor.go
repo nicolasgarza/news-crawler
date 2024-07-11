@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"log"
+	"news-crawler/internal/utils"
 	"strings"
 	"time"
 
@@ -20,9 +21,9 @@ type articleInfo struct {
 	Content string
 }
 
-func NewScraper(collector *colly.Collector, articleUrl string) *ArticleScraper {
+func NewScraper(articleUrl string) *ArticleScraper {
 	return &ArticleScraper{
-		c:          collector,
+		c:          utils.NewCollector(),
 		articleUrl: articleUrl,
 	}
 }
@@ -31,24 +32,8 @@ func (a *ArticleScraper) ScrapeArticle() (*articleInfo, error) {
 	articleInfo := &articleInfo{}
 	var scrapeErr error
 
-	// config stuff so we get authorized
-	a.c.AllowURLRevisit = true
-
-	a.c.Limit(&colly.LimitRule{
-		RandomDelay: time.Millisecond * 200,
-	})
-
 	a.c.OnError(func(_ *colly.Response, err error) {
 		scrapeErr = err
-	})
-
-	a.c.OnRequest(func(r *colly.Request) {
-		r.Headers.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-		r.Headers.Set("Accept-Language", "en-US,en;q=0.5")
-		r.Headers.Set("Accept-Encoding", "gzip, deflate, br")
-		r.Headers.Set("DNT", "1")
-		r.Headers.Set("Connection", "keep-alive")
-		r.Headers.Set("Upgrade-Insecure-Requests", "1")
 	})
 
 	// get title
